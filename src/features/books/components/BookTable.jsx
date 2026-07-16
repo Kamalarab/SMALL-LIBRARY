@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { useBooks } from "../context/BookContext";
+import { useAuth } from "../../auth/context/AuthContext";
 
 export default function BookTable({ books }) {
   const { deleteBook } = useBooks();
+  const { user } = useAuth();
+  const canManage =
+    user && (user.role === "admin" || user.role === "librarian");
 
   if (books.length === 0) {
     return <p className="empty-message">No books found.</p>;
@@ -17,7 +21,7 @@ export default function BookTable({ books }) {
           <th>Author</th>
           <th>Genre</th>
           <th>Year</th>
-          <th>Actions</th>
+          {canManage && <th>Actions</th>}
         </tr>
       </thead>
       <tbody>
@@ -28,19 +32,21 @@ export default function BookTable({ books }) {
             <td>{book.author}</td>
             <td>{book.genre}</td>
             <td>{book.year}</td>
-            <td className="actions">
-              <Link to={`/edit/${book.id}`} className="btn btn-edit">
-                Edit
-              </Link>
-              <button
-                className="btn btn-delete"
-                onClick={() => {
-                  if (confirm(`Delete "${book.title}"?`)) deleteBook(book.id);
-                }}
-              >
-                Delete
-              </button>
-            </td>
+            {canManage && (
+              <td className="actions">
+                <Link to={`/edit/${book.id}`} className="btn btn-edit">
+                  Edit
+                </Link>
+                <button
+                  className="btn btn-delete"
+                  onClick={() => {
+                    if (confirm(`Delete "${book.title}"?`)) deleteBook(book.id);
+                  }}
+                >
+                  Delete
+                </button>
+              </td>
+            )}
           </tr>
         ))}
       </tbody>
